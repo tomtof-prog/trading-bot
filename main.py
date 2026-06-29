@@ -24,6 +24,7 @@ def main():
         
         # Iniziamo il loop
         while True:
+            equity = 0
             try:
                 logger.info("--- Inizio ciclo di scansione notizie ---")
                 
@@ -33,43 +34,43 @@ def main():
                 if not news_list:
                     logger.info("Nessuna nuova notizia trovata.")
                 else:
-                # Recupera l'equity corrente per il Risk Manager ad ogni ciclo
-                equity = trader_executor.get_account_equity()
-                risk_manager = RiskManager(total_equity=equity)
-                
-                # Teniamo traccia dei ticker già processati in questo ciclo per evitare duplicati
-                processed_tickers = set()
+                    # Recupera l'equity corrente per il Risk Manager ad ogni ciclo
+                    equity = trader_executor.get_account_equity()
+                    risk_manager = RiskManager(total_equity=equity)
+                    
+                    # Teniamo traccia dei ticker già processati in questo ciclo per evitare duplicati
+                    processed_tickers = set()
 
-                for news in news_list:
-                    ticker = news.get('ticker')
-                    
-                    if not ticker:
-                        continue
-                    
-                    if ticker in processed_tickers:
-                        continue
-                    
-                    logger.info(f"Analizzando sentiment per {ticker}...")
-                    
-                    # 2. Analisi del Sentiment con Gemini
-                    sentiment_result = sentiment_analyzer.analyze_sentiment(news['content'])
-                    
-                    if sentiment_result:
-                        logger.info(f"Risultato Gemini per {ticker}: Score={sentiment_result.sentiment_score}, Confidence={sentiment_result.confidence}")
+                    for news in news_list:
+                        ticker = news.get('ticker')
                         
-                        # 3. Validazione con Risk Manager
-                        if risk_manager.validate_trade(sentiment_result.sentiment_score, ticker):
-                            # 4. Esecuzione Trade
-                            notional_to_invest = risk_manager.calculate_position_size()
+                        if not ticker:
+                            continue
+
+                        if ticker in processed_tickers:
+                            continue
+
+                        logger.info(f"Analizzando sentiment per {ticker}...")
+
+                        # 2. Analisi del Sentiment con Gemini
+                        sentiment_result = sentiment_analyzer.analyze_sentiment(news['content'])
+
+                        if sentiment_result:
+                            logger.info(f"Risultato Gemini per {ticker}: Score={sentiment_result.sentiment_score}, Confidence={sentiment_result.confidence}")
                             
-                            logger.info(f"Segnale BUY confermato per {ticker}. Esecuzione ordine...")
-                            trader_executor.execute_market_order_with_bracket(ticker, notional_to_invest)
-                            
-                            processed_tickers.add(ticker)
+                            # 3. Validazione con Risk Manager
+                            if risk_manager.validate_trade(sentiment_result.sentiment_score, ticker):
+                                # 4. Esecuzione Trade
+                                notional_to_invest = risk_manager.calculate_position_size()
+
+                                logger.info(f"Segnale BUY confermato per {ticker}. Esecuzione ordine...")
+                                trader_executor.execute_market_order_with_bracket(ticker, notional_to_invest)
+
+                                processed_tickers.add(ticker)
+                            else:
+                                logger.info(f"Operazione non valida o sentiment sotto soglia per {ticker}.")
                         else:
-                            logger.info(f"Operazione non valida o sentiment sotto soglia per {ticker}.")
-                    else:
-                        logger.warning(f"Impossibile analizzare il sentiment per {ticker}.")
+                            logger.warning(f"Impossibile analizzare il sentiment per {ticker}.")
 
                 logger.info(f"Ciclo completato. In attesa di {LOOP_INTERVAL} secondi...")
             except Exception as loop_error:
