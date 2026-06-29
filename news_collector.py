@@ -40,7 +40,8 @@ class NewsCollector:
             news_response = self.client.get_news(request_params)
             
             processed_news = []
-            for news in news_response.data:
+            # news_response.data restituisce un dizionario la cui chiave 'news' contiene la lista degli articoli
+            for news in news_response.data.get('news', []):
                 # Estraiamo le informazioni rilevanti
                 # news.symbols contiene la lista dei ticker associati
                 # news.headline e news.summary per il contenuto
