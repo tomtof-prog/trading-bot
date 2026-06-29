@@ -1,4 +1,5 @@
 from google import genai
+from google.genai import types
 from pydantic import BaseModel, Field
 from typing import Optional
 import json
@@ -18,7 +19,10 @@ class SentimentResult(BaseModel):
 class SentimentAnalyzer:
     def __init__(self):
         try:
-            self.client = genai.Client(api_key=GEMINI_API_KEY)
+            self.client = genai.Client(
+                api_key=GEMINI_API_KEY,
+                http_options=types.HttpOptions(api_version='v1')
+            )
             self.model_name = GEMINI_MODEL_NAME
             logger.info(f"SentimentAnalyzer inizializzato con modello {self.model_name}.")
         except Exception as e:

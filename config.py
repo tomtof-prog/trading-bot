@@ -15,7 +15,7 @@ SENTIMENT_THRESHOLD = 80  # Soglia minima di sentiment per entrare in posizione
 CONFIDENCE_THRESHOLD = 70 # Soglia minima di confidenza dell'analisi
 
 # Parametri Modello AI
-GEMINI_MODEL_NAME = "gemini-1.5-flash"
+GEMINI_MODEL_NAME = "gemini-2.0-flash"
 
 # Intervallo del loop principale (in secondi)
 LOOP_INTERVAL = 300  # 5 minuti
